@@ -1,7 +1,8 @@
 #! /usr/bin/env python
-from PyQt5.QtWidgets import QApplication
-from PyQt5.QtPrintSupport import QPrinter
-from PyQt5.QtGui import QTextDocument
+from PyQt6.QtWidgets import QApplication
+from PyQt6.QtPrintSupport import QPrinter
+from PyQt6.QtGui import QTextDocument
+from PyQt6.QtGui import QPageSize
 import argparse
 import logging
 import os
@@ -81,11 +82,11 @@ class Code2pdf:
         doc.setHtml(doc_html)
         printer = QPrinter()
         printer.setOutputFileName(self.pdf_file)
-        printer.setOutputFormat(QPrinter.PdfFormat)
-        page_size_dict = {"a2": QPrinter.A2, "a3": QPrinter.A3, "a4": QPrinter.A4, "letter": QPrinter.Letter}
-        printer.setPageSize(page_size_dict.get(self.size.lower(), QPrinter.A4))
-        printer.setPageMargins(15, 15, 15, 15, QPrinter.Millimeter)
-        doc.print_(printer)
+        printer.setOutputFormat(QPrinter.OutputFormat.PdfFormat)
+        #page_size_dict = {"a2": QPageSize.PageSizeId.A2, "a3": QPageSize.PageSizeId.A3, "a4": QPrinter.A4, "letter": QPrinter.Letter}
+        #printer.setPageSize(page_size_dict.get(self.size.lower(), QPrinter.A4))
+        #printer.setPageMargins(15, 15, 15, 15, QPrinter.Millimeter)
+        doc.print(printer)
         logging.info("PDF created at %s" % (self.pdf_file))
 
 
