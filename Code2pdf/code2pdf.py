@@ -1,8 +1,5 @@
 #! /usr/bin/env python
-from PyQt6.QtWidgets import QApplication
-from PyQt6.QtPrintSupport import QPrinter
-from PyQt6.QtGui import QTextDocument
-from PyQt6.QtGui import QPageSize
+from weasyprint import HTML, CSS
 import argparse
 import logging
 import os
@@ -13,11 +10,11 @@ try:
     import pygments
     from pygments import lexers, formatters, styles
 except ImportError as ex:
-    logging.warning('\nCould not import the required "pygments" \
+    logging.error('\nCould not import the required "pygments" \
         module:\n{}'.format(ex))
     sys.exit(1)
 
-__version__ = '1.1.0'
+__version__ = '2.1.0'
 
 
 def logger(func):
@@ -48,11 +45,15 @@ class Code2pdf:
         except pygments.util.ClassNotFound:
             # Try guessing the lexer (file type) later.
             lexer = None
+            print("No lexer is found.")
 
         try:
             formatter = formatters.HtmlFormatter(
                 linenos=linenos,
                 style=style,
+                wrapcode=True,
+                #cssclass='source',
+                font_size=8,
                 full=True)
         except pygments.util.ClassNotFound:
             logging.error("\nInvalid style name: {}\nExpecting one of:\n \
@@ -75,18 +76,35 @@ class Code2pdf:
         return pygments.highlight(content, lexer, formatter)
 
     def init_print(self, linenos=True, style="default"):
-        app = QApplication([])  # noqa
-        doc = QTextDocument()
         doc_html = self.highlight_file(linenos=linenos, style=style)
         doc_html = re.sub(re.compile(r'<http://pygments.org>'), '', doc_html)
-        doc.setHtml(doc_html)
-        printer = QPrinter()
-        printer.setOutputFileName(self.pdf_file)
-        printer.setOutputFormat(QPrinter.OutputFormat.PdfFormat)
-        #page_size_dict = {"a2": QPageSize.PageSizeId.A2, "a3": QPageSize.PageSizeId.A3, "a4": QPrinter.A4, "letter": QPrinter.Letter}
-        #printer.setPageSize(page_size_dict.get(self.size.lower(), QPrinter.A4))
-        #printer.setPageMargins(15, 15, 15, 15, QPrinter.Millimeter)
-        doc.print(printer)
+        css = CSS(string='''
+                table {
+                    font-size:0.7em;
+                }
+                @page {
+                    size: A4 portrait; margin: 3%;
+                    @bottom-center {
+                        content: counter(page);
+                    }
+                }
+                .page-break-inside {
+                    page-break-inside: avoid;
+                }
+                .span {
+                    line-break:strict;
+                }
+                .long-word {
+                    white-space: nowrap;
+                }
+                .page-break {
+                    page-break-after: always;
+                }
+        ''')
+        #print(doc_html)
+        doc = HTML(string=doc_html)
+        doc.write_pdf(self.pdf_file, stylesheets=[css],zoom=1.2)
+        #print(doc_html)
         logging.info("PDF created at %s" % (self.pdf_file))
 
 
@@ -134,7 +152,10 @@ def parse_arg():
         "--style",
         help="the style name for highlighting.",
         type=str,
-        default="default",
+        #default="default",
+        default="xcode",
+        #default="vs",
+        #default="gruvbox-light",
         metavar="NAME")
     parser.add_argument(
         "-v",

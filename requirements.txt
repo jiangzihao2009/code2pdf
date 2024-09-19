@@ -1,3 +1,3 @@
-Pygments
+Pygments=2.17.2
 unittest2
-pyqt6
+weasyprint==62.3
