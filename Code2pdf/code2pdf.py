@@ -91,9 +91,6 @@ class Code2pdf:
                 .page-break-inside {
                     page-break-inside: avoid;
                 }
-                .span {
-                    line-break:strict;
-                }
                 .long-word {
                     white-space: nowrap;
                 }
@@ -165,12 +162,12 @@ def parse_arg():
     return parser.parse_args()
 
 
-def main():
-    args = parse_arg()
-    pdf_file = get_output_file(args.filename, args.outputfile)
-    pdf = Code2pdf(args.filename, pdf_file, args.size)
-    pdf.init_print(linenos=args.linenos, style=args.style)
+def main(args):
+    pdf_file = get_output_file(args['filename'], args['outputfile'])
+    pdf = Code2pdf(args['filename'], pdf_file, args['size'])
+    pdf.init_print(linenos=args['linenos'], style=args['style'])
     return 0
 
 if __name__ == "__main__":
-    sys.exit(main())
+    args = parse_arg()
+    sys.exit(main(var(args)))
