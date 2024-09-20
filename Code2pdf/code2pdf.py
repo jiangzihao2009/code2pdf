@@ -45,7 +45,7 @@ class Code2pdf:
         except pygments.util.ClassNotFound:
             # Try guessing the lexer (file type) later.
             lexer = None
-            print("No lexer is found.")
+            #print("No lexer is found.")
 
         try:
             formatter = formatters.HtmlFormatter(
