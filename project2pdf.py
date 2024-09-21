@@ -5,7 +5,7 @@ import time
 import logging
 import Code2pdf
 import markdown
-from weasyprint import HTML
+from weasyprint import HTML, CSS
 
 
 logger = logging.getLogger()
@@ -35,19 +35,40 @@ def build_directory(dir_path : str):
 
 file_black_list = {'.gitignore'}
 file_suffix_black_list = {'.js', '.css', '.png', '.svg',
-                          '.jpg', '.pdf', '.toml', '.ps1', '.pb', '.onnx'}
+                          '.jpg', '.pdf', '.toml', '.ps1',
+                          '.pb', '.onnx', '.jpeg', '.cs'}
 def is_black_file(file: str):
     if file in file_black_list:
         return True
     name, file_extension = os.path.splitext(file)
-    if file_extension in file_suffix_black_list:
+    if file_extension.lower() in file_suffix_black_list:
         return True
     return False
 
 def markdown2pdf(input_path, out_path):
+    css = CSS(string='''
+         table {
+            font-size:0.5em;
+         }
+         @page {
+            size: A4 portrait; margin: 3%;
+            @bottom-center {
+                content: counter(page);
+            }
+         }
+         .page-break-inside {
+            page-break-inside: avoid;
+         }
+         .long-word {
+            white-space: nowrap;
+         }
+         .page-break {
+            page-break-after: always;
+         }
+    ''')
     with open(input_path,'r') as f:
         html = markdown.markdown(f.read(), extensions=['fenced_code', 'codehilite'])
-    HTML(string=html).write_pdf(out_path)
+    HTML(string=html).write_pdf(out_path, stylesheets=[css])
 
 
 def handle_one_file(src_path: str, dst_path: str, file: str):
